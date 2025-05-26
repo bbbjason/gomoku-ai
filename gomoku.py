@@ -19,10 +19,10 @@ def expand_board_with_border(board, border=1):
 
 def check_needs_expansion(board, margin=2):
     size = len(board)
-    for i in range(size):
-        for j in range(size):
-            if board[i][j] != '-':
-                if i < margin or j < margin or i >= size - margin or j >= size - margin:
+    for row in range(size):
+        for col in range(size):
+            if board[row][col] != '-':
+                if row < margin or col < margin or row >= size - margin or col >= size - margin:
                     return True
     return False
 
@@ -47,21 +47,76 @@ def get_input(player, row_labels, col_labels):
         else:
             print("Invalid input. Please enter a move like F6, or type 'larger'.")
 
-def check_win(board, player, win_count=5):
+def check_win(board, row, col, player, win_count=5):
     size = len(board)
-    for row in range(size):
-        for col in range(size):
-            if board[row][col] != player:
-                continue
-            if col + win_count <= size and all(board[row][col + i] == player for i in range(win_count)):
-                return True
-            if row + win_count <= size and all(board[row + i][col] == player for i in range(win_count)):
-                return True
-            if row + win_count <= size and col + win_count <= size and all(board[row + i][col + i] == player for i in range(win_count)):
-                return True
-            if row + win_count <= size and col - win_count + 1 >= 0 and all(board[row + i][col - i] == player for i in range(win_count)):
-                return True
+    directions = [
+        (0, 1),   # →
+        (1, 0),   # ↓
+        (1, 1),   # ↘
+        (1, -1)   # ↙
+    ]
+
+    for dr, dc in directions:
+        count = 1
+
+        # 往正方向延伸
+        for i in range(1, win_count):
+            r, c = row + dr * i, col + dc * i
+            if 0 <= r < size and 0 <= c < size and board[r][c] == player:
+                count += 1
+            else:
+                break
+
+        # 往反方向延伸
+        for i in range(1, win_count):
+            r, c = row - dr * i, col - dc * i
+            if 0 <= r < size and 0 <= c < size and board[r][c] == player:
+                count += 1
+            else:
+                break
+
+        if count >= win_count:
+            return True
+
     return False
+
+def shift_board(board, row, col, margin=2):
+    """
+    將 board 整體平移，使 (row,col) 至少距離邊界 margin。
+    回傳新的 board，以及更新後的 row, col。
+    """
+    size = len(board)
+    # 計算需要往哪個方向、多少格平移
+    shift_r = 0
+    shift_c = 0
+    if row < margin:
+        shift_r = margin - row
+    elif row >= size - margin:
+        shift_r = (size - margin - 1) - row
+
+    if col < margin:
+        shift_c = margin - col
+    elif col >= size - margin:
+        shift_c = (size - margin - 1) - col
+
+    # 如果不需要平移，直接回傳原值
+    if shift_r == 0 and shift_c == 0:
+        return board, row, col
+
+    # 建立同尺寸的新棋盤，默認全空
+    new_board = create_board(size)
+    for i in range(size):
+        for j in range(size):
+            ni = i + shift_r
+            nj = j + shift_c
+            if 0 <= ni < size and 0 <= nj < size:
+                new_board[ni][nj] = board[i][j]
+
+    # 更新落子座標
+    new_row = row + shift_r
+    new_col = col + shift_c
+    return new_board, new_row, new_col
+
 
 def play_game():
     board = create_board(7)
@@ -72,29 +127,38 @@ def play_game():
         print_board(board, row_labels, col_labels)
 
         move = get_input(current_player, row_labels, col_labels)
-
         if move == ("LARGER", "LARGER"):
             board = expand_board_with_border(board, border=1)
             print(f"Board size increased to {len(board)}x{len(board)}.")
             continue
 
         row, col = move
-        if board[row][col] == '-':
-            board[row][col] = current_player
-
-            # 移動後檢查是否接近邊界，如有則擴張
-            if check_needs_expansion(board, margin=2):
-                board = expand_board_with_border(board, border=1)
-
-            if check_win(board, current_player):
-                row_labels, col_labels = get_labels(len(board))
-                print_board(board, row_labels, col_labels)
-                print(f"Player {current_player} wins!")
-                return
-
-            current_player = 'X' if current_player == 'O' else 'O'
-        else:
+        if board[row][col] != '-':
             print("Cell already taken. Try again.")
+            continue
+
+        board[row][col] = current_player
+        temp_board = board
+
+        # 先平移
+        if check_needs_expansion(board, margin=2):
+            board, row, col = shift_board(board, row, col, margin=2)
+
+        # 平移後若依然碰邊，再真正擴張
+        if check_needs_expansion(board, margin=2):
+            board = expand_board_with_border(temp_board, border=1)
+            # shift_board 之後 board 大小不變，但 expand 後要重新計算 labels
+            print(f"Board size increased to {len(board)}x{len(board)}.")
+
+        # 判斷勝利
+        if check_win(board, row, col, current_player, win_count=5):
+            row_labels, col_labels = get_labels(len(board))
+            print_board(board, row_labels, col_labels)
+            print(f"Player {current_player} wins!")
+            return
+
+        # 換手
+        current_player = 'X' if current_player == 'O' else 'O'
 
 # 開始遊戲
 play_game()
