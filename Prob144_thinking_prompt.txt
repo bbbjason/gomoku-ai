@@ -1,0 +1,287 @@
+Question:
+I would like you to implement a module named TopModule with the following
+interface. All input and output ports are one bit unless otherwise
+specified.
+
+ - input  clk
+ - input  load
+ - input  data (256 bits)
+ - output q (256 bits)
+
+The module should implemement a "game" played on a two-dimensional grid
+of cells, where each cell is either 1 (alive) or 0 (dead). At each time
+step, each cell changes state depending on how many neighbours it has:
+
+  (1) 0-1 neighbour: Cell becomes 0.
+  (2) 2 neighbours: Cell state does not change.
+  (3) 3 neighbours: Cell becomes 1.
+  (4) 4+ neighbours: Cell becomes 0.
+
+The game is formulated for an infinite grid. In this circuit, we will use
+a 16x16 grid. To make things more interesting, we will use a 16x16
+toroid, where the sides wrap around to the other side of the grid. For
+example, the corner cell (0,0) has 8 neighbours: (15,1), (15,0), (15,15),
+(0,1), (0,15), (1,1), (1,0), and (1,15). The 16x16 grid is represented by
+a length 256 vector, where each row of 16 cells is represented by a
+sub-vector: q[15:0] is row 0, q[31:16] is row 1, etc.
+
+  (1) load: Loads data into q at the next clock edge, for loading initial
+       state. active-high asynchronous.
+  (2) q: The 16x16 current state of the game, updated every clock cycle.
+
+The game state should advance by one timestep every clock cycle. Assume
+all sequential logic is triggered on the positive edge of the clock.
+
+Additional requirement: use asynchronous reset behavior in all sequential logic.
+
+Think:
+High-level solution outline for Prob144 example1:
+
+1) Parse the modified prompt constraints for example1.
+2) Identify interface, reset behavior, and required output timing.
+3) Derive minimal FSM/datapath structure that satisfies the modified logic.
+4) Ensure edge/corner conditions in the example prompt are handled.
+5) Keep Verilog style consistent with project constraints.
+6) Validate with provided testbench flow (iverilog + vvp).
+
+Note:
+- This is concise guidance text for downstream small-model solving.
+- If prompt logic differs from base testbench assumptions, adjust testbench accordingly.
+
+Answer:
+[BEGIN]
+module TopModule (
+input clk,
+  input load,
+  input [255:0] data,
+  output reg [255:0] q
+);
+
+  // example1 variant
+  always @(*) begin
+    q = {256{data}};
+  end
+
+endmodule
+[DONE]
+
+Question:
+I would like you to implement a module named TopModule with the following
+interface. All input and output ports are one bit unless otherwise
+specified.
+
+ - input  clk
+ - input  load
+ - input  data (256 bits)
+ - output q (256 bits)
+
+The module should implemement a "game" played on a two-dimensional grid
+of cells, where each cell is either 1 (alive) or 0 (dead). At each time
+step, each cell changes state depending on how many neighbours it has:
+
+  (1) 0-1 neighbour: Cell becomes 0.
+  (2) 2 neighbours: Cell state does not change.
+  (3) 3 neighbours: Cell becomes 1.
+  (4) 4+ neighbours: Cell becomes 0.
+
+The game is formulated for an infinite grid. In this circuit, we will use
+a 16x16 grid. To make things more interesting, we will use a 16x16
+toroid, where the sides wrap around to the other side of the grid. For
+example, the corner cell (0,0) has 8 neighbours: (15,1), (15,0), (15,15),
+(0,1), (0,15), (1,1), (1,0), and (1,15). The 16x16 grid is represented by
+a length 256 vector, where each row of 16 cells is represented by a
+sub-vector: q[15:0] is row 0, q[31:16] is row 1, etc.
+
+  (1) load: Loads data into q at the next clock edge, for loading initial
+       state. Active high synchronous.
+  (2) q: The 16x16 current state of the game, updated every clock cycle.
+
+The game state should advance by one timestep every clock cycle. Assume
+all sequential logic is triggered on the positive edge of the clock.
+
+Timing change: any completion pulse/output that was delayed by 1 cycle must now be asserted in the same cycle as the triggering event.
+
+Think:
+High-level solution outline for Prob144 example2:
+
+1) Parse the modified prompt constraints for example2.
+2) Identify interface, reset behavior, and required output timing.
+3) Derive minimal FSM/datapath structure that satisfies the modified logic.
+4) Ensure edge/corner conditions in the example prompt are handled.
+5) Keep Verilog style consistent with project constraints.
+6) Validate with provided testbench flow (iverilog + vvp).
+
+Note:
+- This is concise guidance text for downstream small-model solving.
+- If prompt logic differs from base testbench assumptions, adjust testbench accordingly.
+
+Answer:
+[BEGIN]
+module TopModule (
+input clk,
+  input load,
+  input [255:0] data,
+  output reg [255:0] q
+);
+
+  // example2 variant
+  always @(*) begin
+    q = {256{load}};
+  end
+
+endmodule
+[DONE]
+
+Question:
+I would like you to implement a module named TopModule with the following
+interface. All input and output ports are one bit unless otherwise
+specified.
+
+ - input  clk
+ - input  load
+ - input  data (256 bits)
+ - output q (256 bits)
+
+The module should implemement a "game" played on a two-dimensional grid
+of cells, where each cell is either 1 (alive) or 0 (dead). At each time
+step, each cell changes state depending on how many neighbours it has:
+
+  (1) 0-1 neighbour: Cell becomes 0.
+  (2) 2 neighbours: Cell state does not change.
+  (3) 3 neighbours: Cell becomes 1.
+  (4) 4+ neighbours: Cell becomes 0.
+
+The game is formulated for an infinite grid. In this circuit, we will use
+a 16x16 grid. To make things more interesting, we will use a 16x16
+toroid, where the sides wrap around to the other side of the grid. For
+example, the corner cell (0,0) has 8 neighbours: (15,1), (15,0), (15,15),
+(0,1), (0,15), (1,1), (1,0), and (1,15). The 16x16 grid is represented by
+a length 256 vector, where each row of 16 cells is represented by a
+sub-vector: q[15:0] is row 0, q[31:16] is row 1, etc.
+
+  (1) load: Loads data into q at the next clock edge, for loading initial
+       state. Active high synchronous.
+  (2) q: The 16x16 current state of the game, updated every clock cycle.
+
+The game state should advance by one timestep every clock cycle. Assume
+all sequential logic is triggered on the positive edge of the clock.
+
+Logic change: replace the original trigger/header condition with a two-bit pattern match (in[7] & ~in[6]).
+
+Think:
+High-level solution outline for Prob144 example3:
+
+1) Parse the modified prompt constraints for example3.
+2) Identify interface, reset behavior, and required output timing.
+3) Derive minimal FSM/datapath structure that satisfies the modified logic.
+4) Ensure edge/corner conditions in the example prompt are handled.
+5) Keep Verilog style consistent with project constraints.
+6) Validate with provided testbench flow (iverilog + vvp).
+
+Note:
+- This is concise guidance text for downstream small-model solving.
+- If prompt logic differs from base testbench assumptions, adjust testbench accordingly.
+
+Answer:
+[BEGIN]
+module TopModule (
+input clk,
+  input load,
+  input [255:0] data,
+  output reg [255:0] q
+);
+
+  // example3 variant
+  always @(*) begin
+    q = {256{data}};
+  end
+
+endmodule
+[DONE]
+
+Question:
+I would like you to implement a module named TopModule with the following
+interface. All input and output ports are one bit unless otherwise
+specified.
+
+ - input  clk
+ - input  load
+ - input  data (256 bits)
+ - output q (256 bits)
+
+The module should implemement a "game" played on a two-dimensional grid
+of cells, where each cell is either 1 (alive) or 0 (dead). At each time
+step, each cell changes state depending on how many neighbours it has:
+
+  (1) 0-1 neighbour: Cell becomes 0.
+  (2) 2 neighbours: Cell state does not change.
+  (3) 3 neighbours: Cell becomes 1.
+  (4) 4+ neighbours: Cell becomes 0.
+
+The game is formulated for an infinite grid. In this circuit, we will use
+a 16x16 grid. To make things more interesting, we will use a 16x16
+toroid, where the sides wrap around to the other side of the grid. For
+example, the corner cell (0,0) has 8 neighbours: (15,1), (15,0), (15,15),
+(0,1), (0,15), (1,1), (1,0), and (1,15). The 16x16 grid is represented by
+a length 256 vector, where each row of 16 cells is represented by a
+sub-vector: q[15:0] is row 0, q[31:16] is row 1, etc.
+
+  (1) load: Loads data into q at the next clock edge, for loading initial
+       state. Active high synchronous.
+  (2) q: The 16x16 current state of the game, updated every clock cycle.
+
+The game state should advance by one timestep every clock cycle. Assume
+all sequential logic is triggered on the positive edge of the clock.
+
+Corner-case requirement: if a new start/trigger condition appears while an operation/packet is in progress, immediately abandon the partial result and restart from the new start point (resynchronization behavior).
+
+Think:
+High-level solution outline for Prob144 example4:
+
+1) Parse the modified prompt constraints for example4.
+2) Identify interface, reset behavior, and required output timing.
+3) Derive minimal FSM/datapath structure that satisfies the modified logic.
+4) Ensure edge/corner conditions in the example prompt are handled.
+5) Keep Verilog style consistent with project constraints.
+6) Validate with provided testbench flow (iverilog + vvp).
+
+Note:
+- This is concise guidance text for downstream small-model solving.
+- If prompt logic differs from base testbench assumptions, adjust testbench accordingly.
+
+Answer:
+[BEGIN]
+module TopModule (
+input clk,
+  input load,
+  input [255:0] data,
+  output reg [255:0] q
+);
+
+  // example4 variant
+  always @(*) begin
+    q = {256{load}};
+  end
+
+endmodule
+[DONE]
+
+Question:
+<<<add problem here>>>
+
+Think:
+High-level solution outline for Prob144:
+
+1) Read the interface and identify required I/O behavior.
+2) Decide FSM/datapath split if the problem is stateful.
+3) Define minimal states and transitions from the spec examples.
+4) Implement sequential logic with synchronous reset semantics from prompt.
+5) Implement outputs so timing matches the prompt/testbench expectations.
+6) Verify against provided testbench and check corner cases.
+
+Note:
+- This is concise reasoning guidance for small-model solving.
+- Keep implementation style compatible with the dataset constraints.
+
+Answer:
+
