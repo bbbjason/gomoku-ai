@@ -1,0 +1,72 @@
+Question:
+I would like you to implement a module named TopModule with the following
+interface. All input and output ports are one bit unless otherwise
+specified.
+
+ - input  clk
+ - input  reset
+ - input  ena
+ - output pm
+ - output hh (8 bits)
+ - output mm (8 bits)
+ - output ss (8 bits)
+
+Create a set of counters suitable for use as a 12-hour clock (with am/pm
+indicator). Your counters are clocked by a fast-running clk, with a pulse
+on ena whenever your clock should increment (i.e., once per second, while
+"clk" is much faster than once per second). The signal "pm" is asserted
+if the clock is PM, or is otherwise AM. hh, mm, and ss are two BCD
+(Binary- Coded Decimal) digits each for hours (01-12), minutes (00-59),
+and seconds (00-59). Reset is the active high synchronous signal that
+resets the clock to "12:00 AM." Reset has higher priority than enable and
+can occur even when not enabled. Assume all sequential logic is triggered
+on the positive edge of the clock.
+
+Answer:
+[BEGIN]
+module TopModule (
+  input clk,
+  input reset,
+  input ena,
+  output reg pm,
+  output reg [7:0] hh,
+  output reg [7:0] mm,
+  output reg [7:0] ss
+);
+
+  wire [6:0] enable = {
+    {hh[7:0],mm[7:0],ss[7:0]}==24'h115959,
+    {hh[3:0],mm[7:0],ss[7:0]}==20'h95959,
+    {mm[7:0],ss[7:0]}==16'h5959,
+    {mm[3:0],ss[7:0]}==12'h959,
+    ss[7:0]==8'h59,
+    ss[3:0] == 4'h9,
+    1'b1};
+
+  always @(posedge clk)
+    if (reset)
+      {pm,hh,mm,ss} <= 25'h0120000;
+    else if (ena) begin
+      if (enable[0] && ss[3:0] == 9) ss[3:0] <= 0;
+      else if (enable[0]) ss[3:0] <= ss[3:0] + 1;
+
+      if (enable[1] && ss[7:4] == 4'h5) ss[7:4] <= 0;
+      else if (enable[1]) ss[7:4] <= ss[7:4] + 1;
+
+      if (enable[2] && mm[3:0] == 9) mm[3:0] <= 0;
+      else if (enable[2]) mm[3:0] <= mm[3:0] + 1;
+
+      if (enable[3] && mm[7:4] == 4'h5) mm[7:4] <= 0;
+      else if (enable[3]) mm[7:4] <= mm[7:4] + 1;
+
+      if (enable[4] && hh[3:0] == 4'h9) hh[3:0] <= 0;
+      else if (enable[4]) hh[3:0] <= hh[3:0] + 1;
+
+      if (enable[4] && hh[7:0] == 8'h12) hh[7:0] <= 8'h1;
+      else if (enable[5]) hh[7:4] <= hh[7:4] + 1;
+
+      if (enable[6]) pm <= ~pm;
+    end
+
+endmodule
+[DONE]

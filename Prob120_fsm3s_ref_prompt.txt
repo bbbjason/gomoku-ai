@@ -1,0 +1,53 @@
+Question:
+I would like you to implement a module named TopModule with the following
+interface. All input and output ports are one bit unless otherwise
+specified.
+
+ - input  clk
+ - input  reset
+ - input  in
+ - output out
+
+The module should implement a Moore state machine with the following
+state transition table with one input, one output, and four states.
+Include a synchronous active high reset that resets the FSM to state A.
+Assume all sequential logic is triggered on the positive edge of the
+clock.
+
+  State | Next state in=0, Next state in=1 | Output
+  A     | A, B                             | 0
+  B     | C, B                             | 0
+  C     | A, D                             | 0
+  D     | C, B                             | 1
+
+Answer:
+[BEGIN]
+module TopModule (
+  input clk,
+  input in,
+  input reset,
+  output out
+);
+
+  parameter A=0, B=1, C=2, D=3;
+  reg [1:0] state;
+  reg [1:0] next;
+
+  always_comb begin
+    case (state)
+      A: next = in ? B : A;
+      B: next = in ? B : C;
+      C: next = in ? D : A;
+      D: next = in ? B : C;
+    endcase
+  end
+
+  always @(posedge clk) begin
+    if (reset) state <= A;
+      else state <= next;
+  end
+
+  assign out = (state==D);
+
+endmodule
+[DONE]
